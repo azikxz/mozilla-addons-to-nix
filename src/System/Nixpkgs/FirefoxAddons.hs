@@ -119,7 +119,7 @@ instance FromJSON AddonData where
 
       return AddonData {..}
 
-parseHash :: MonadFail m => Text -> m Hash
+parseHash :: (MonadFail m) => Text -> m Hash
 parseHash raw =
   case T.splitOn ":" raw of
     ["sha256", hash] -> pure $ Hash hash Sha256
