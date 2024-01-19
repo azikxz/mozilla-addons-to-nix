@@ -22,10 +22,7 @@
         name = "mozilla-addons-to-nix";
         src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
 
-        package = hpkgs.developPackage {
-          inherit name;
-          root = src;
-        };
+        package = hpkgs.callCabal2nix name src { };
 
         pre-commit-check = pre-commit-hooks.lib.${system}.run {
           inherit src;
@@ -41,9 +38,12 @@
 
         checks = { inherit package pre-commit-check; };
 
-        devShell = pkgs.mkShell {
-          inputsFrom = [ package.env ];
-          packages = with hpkgs; [ cabal-install haskell-language-server ];
+        devShells.default = hpkgs.shellFor {
+          packages = ps: [ package ];
+          nativeBuildInputs = with hpkgs; [
+            cabal-install
+            haskell-language-server
+          ];
           shellHook = pre-commit-check.shellHook;
         };
       });
