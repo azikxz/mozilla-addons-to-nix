@@ -31,9 +31,9 @@
           inherit src;
           hooks = {
             cabal-fmt.enable = true;
+            hlint.enable = true;
             nixfmt.enable = true;
             ormolu.enable = true;
-            #hlint.enable = true;
           };
         };
       in {
