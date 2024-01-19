@@ -4,38 +4,47 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs = {
+        flake-utils.follows = "flake-utils";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
   };
 
-  outputs = { self, flake-utils, nixpkgs }:
+  outputs = { self, flake-utils, nixpkgs, pre-commit-hooks }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        hpkgs = pkgs.haskell.packages.ghc902;
-
-        pFormat = pkgs.writeShellScriptBin "p-format" ''
-          shopt -s globstar
-          ${pkgs.haskellPackages.cabal-fmt}/bin/cabal-fmt -i **/*.cabal
-          ${pkgs.nixfmt}/bin/nixfmt **/*.nix
-          ${pkgs.ormolu}/bin/ormolu -i **/*.hs
-        '';
+        hpkgs = pkgs.haskell.packages.ghc94;
 
         name = "mozilla-addons-to-nix";
-        root = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
+        src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
+
+        package = hpkgs.developPackage {
+          inherit name;
+          root = src;
+        };
+
+        pre-commit-check = pre-commit-hooks.lib.${system}.run {
+          inherit src;
+          hooks = {
+            cabal-fmt.enable = true;
+            nixfmt.enable = true;
+            ormolu.enable = true;
+            #hlint.enable = true;
+          };
+        };
       in {
-        packages.default = hpkgs.callCabal2nix name root { };
+        packages.default = package;
 
-        devShell = hpkgs.developPackage {
-          inherit name root;
-          returnShellEnv = true;
-          modifier = drv:
-            pkgs.haskell.lib.addBuildTools drv (with hpkgs; [
-              cabal-install
-              cabal2nix
-              haskell-language-server
-              hoogle
+        checks = { inherit package pre-commit-check; };
 
-              pFormat
-            ]);
+        devShell = pkgs.mkShell {
+          inputsFrom = [ package.env ];
+          packages = with hpkgs; [ cabal-install haskell-language-server ];
+          shellHook = pre-commit-check.shellHook;
         };
       });
 }
