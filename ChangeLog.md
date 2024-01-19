@@ -1,5 +1,14 @@
 # Revision history for Mozilla Add-ons to Nix
 
+## Version 0.11.0 (2024-01-19)
+
+* Handle 401 Unauthorized errors from the Mozilla add-on API. This
+  error occurs quite often and typically means that the add-on has
+  been removed or made private. When this happens we simply log the
+  fact and omit the add-on from the output.
+
+* Update dependencies and build files.
+
 ## Version 0.10.0 (2023-08-21)
 
 * Write the add-on permissions to the package meta data. This is
