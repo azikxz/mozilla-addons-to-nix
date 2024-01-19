@@ -125,7 +125,7 @@ parseHash :: (MonadFail m) => Text -> m Hash
 parseHash raw =
   case T.splitOn ":" raw of
     ["sha256", hash] -> pure $ Hash hash Sha256
-    _ -> fail . toString $ "Unknown hash: " <> raw
+    _otherwise -> fail . toString $ "Unknown hash: " <> raw
 
 licenses :: IntMap AddonLicense
 licenses =
