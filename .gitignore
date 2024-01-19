@@ -1,5 +1,6 @@
 /.envrc
-/TAGS
+/.pre-commit-config.yaml
+/cabal.project.local*
 /dist
 /dist-newstyle
-/.pre-commit-config.yaml
+/TAGS
