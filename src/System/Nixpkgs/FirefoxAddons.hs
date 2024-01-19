@@ -26,10 +26,12 @@ module System.Nixpkgs.FirefoxAddons
   )
 where
 
+import qualified Control.Exception as E
 import Data.Aeson
 import qualified Data.Text as T
 import Lens.Micro.Platform
-import Network.Wreq (asJSON, responseBody)
+import Network.HTTP.Client (HttpException (HttpExceptionRequest), HttpExceptionContent (StatusCodeException))
+import Network.Wreq (Response, asJSON, responseBody, responseStatus, statusCode)
 import qualified Network.Wreq.Session as Wreq
 import Nix.Expr
 import Nix.Pretty
@@ -215,21 +217,35 @@ addonUrl slug =
     <> slug
     <> "/?app=firefox&lang=en-US"
 
-fetchAddonData :: Wreq.Session -> Text -> IO AddonData
+fetchAddonData :: Wreq.Session -> Text -> IO (Maybe AddonData)
 fetchAddonData sess slug =
   do
-    addon <- view responseBody <$> fetch
-    putTextLn $ "Fetched " <> slug <> " version " <> addon ^. addonVersion
-    return addon
+    result <- fetch
+    case result of
+      Nothing -> do
+        putTextLn $ "Skipping missing addon " <> slug
+        pure Nothing
+      Just r -> do
+        let addon = r ^. responseBody
+        putTextLn $ "Fetched " <> slug <> " version " <> addon ^. addonVersion
+        pure $ Just addon
   where
-    fetch = Wreq.get sess (toString $ addonUrl slug) >>= asJSON
+    fetch :: IO (Maybe (Response AddonData))
+    fetch = E.handle handle $ do
+      result <- Wreq.get sess (toString $ addonUrl slug)
+      Just <$> asJSON result
+
+    handle e@(HttpExceptionRequest _ (StatusCodeException s _))
+      | s ^. responseStatus . statusCode == 401 = pure Nothing
+      | otherwise = E.throwIO e
+    handle e = E.throwIO e
 
 generateFirefoxAddonPackages :: [AddonReq] -> IO Text
 generateFirefoxAddonPackages reqs =
   do
     sess <- Wreq.newAPISession
-    addons <- sortOn (^. addonNixName) <$> mapM (fetchAndModify sess) reqs
+    addons <- sortOn (^. addonNixName) <$> mapMaybeM (fetchAndModify sess) reqs
     pure . show . prettyNix . packageFun $ addons
   where
     fetchAndModify sess AddonReq {..} =
-      _addonReqModify <$> fetchAddonData sess _addonReqSlug
+      fmap _addonReqModify <$> fetchAddonData sess _addonReqSlug

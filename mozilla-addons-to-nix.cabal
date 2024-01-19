@@ -19,6 +19,7 @@ executable mozilla-addons-to-nix
     , base                >=4.11
     , directory
     , hnix                >=0.13
+    , http-client
     , microlens-aeson
     , microlens-platform
     , relude              >=1.0.0
