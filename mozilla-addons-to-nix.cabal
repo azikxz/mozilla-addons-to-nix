@@ -16,6 +16,7 @@ executable mozilla-addons-to-nix
   other-modules:    System.Nixpkgs.FirefoxAddons
   build-depends:
     , aeson
+    , async-pool
     , base                >=4.11
     , directory
     , hnix                >=0.13

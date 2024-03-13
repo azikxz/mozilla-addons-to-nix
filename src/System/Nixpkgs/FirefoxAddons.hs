@@ -26,6 +26,7 @@ module System.Nixpkgs.FirefoxAddons
   )
 where
 
+import Control.Concurrent.Async.Pool (mapConcurrently, withTaskGroup)
 import qualified Control.Exception as E
 import Data.Aeson
 import qualified Data.Text as T
@@ -243,9 +244,12 @@ fetchAddonData sess slug =
 generateFirefoxAddonPackages :: [AddonReq] -> IO Text
 generateFirefoxAddonPackages reqs =
   do
-    sess <- Wreq.newAPISession
-    addons <- sortOn (^. addonNixName) <$> mapMaybeM (fetchAndModify sess) reqs
+    addons <- sortOn (^. addonNixName) . catMaybes <$> parallelFetch
     pure . show . prettyNix . packageFun $ addons
   where
+    parallelFetch = withTaskGroup 2 $ \g -> do
+      sess <- Wreq.newAPISession
+      mapConcurrently g (fetchAndModify sess) reqs
+
     fetchAndModify sess AddonReq {..} =
       fmap _addonReqModify <$> fetchAddonData sess _addonReqSlug
