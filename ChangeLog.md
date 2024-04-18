@@ -1,5 +1,11 @@
 # Revision history for Mozilla Add-ons to Nix
 
+## Unreleased
+
+* Enable a little bit of concurrency when fetching add-on information.
+  To avoid hammering the servers too much, we limit the number of
+  concurrent fetches to two.
+
 ## Version 0.11.0 (2024-01-19)
 
 * Handle 401 Unauthorized errors from the Mozilla add-on API. This
