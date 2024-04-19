@@ -1,6 +1,6 @@
 # Revision history for Mozilla Add-ons to Nix
 
-## Unreleased
+## Version 0.12.0 (2024-04-19)
 
 * Enable a little bit of concurrency when fetching add-on information.
   To avoid hammering the servers too much, we limit the number of
