@@ -1,6 +1,6 @@
 # Revision history for Mozilla Add-ons to Nix
 
-## Version 0.13.0 (unreleased)
+## Version 0.13.0 (2025-08-20)
 
 * Handle 404 errors similar to 401 errors. That is, log it and skip
   the add-on.
