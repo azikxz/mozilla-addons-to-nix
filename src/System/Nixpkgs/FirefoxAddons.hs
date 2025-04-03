@@ -237,7 +237,7 @@ fetchAddonData sess slug =
       Just <$> asJSON result
 
     handle e@(HttpExceptionRequest _ (StatusCodeException s _))
-      | s ^. responseStatus . statusCode == 401 = pure Nothing
+      | let c = s ^. responseStatus . statusCode in c == 401 || c == 404 = pure Nothing
       | otherwise = E.throwIO e
     handle e = E.throwIO e
 
