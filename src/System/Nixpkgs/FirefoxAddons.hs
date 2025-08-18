@@ -21,6 +21,7 @@ module System.Nixpkgs.FirefoxAddons
     addonLicense,
     addonLicenseId,
     addonNixName,
+    addonKnownVulnerabilities,
     addonSlug,
     addonVersion,
   )
@@ -77,7 +78,8 @@ data AddonData = AddonData
     _addonDescription :: Text,
     _addonLicenseId :: Int,
     _addonLicense :: Maybe AddonLicense,
-    _addonHomepage :: Maybe Text
+    _addonHomepage :: Maybe Text,
+    _addonKnownVulnerabilities :: [Text]
   }
   deriving (Eq, Show)
 
@@ -119,6 +121,8 @@ instance FromJSON AddonData where
           (fail "No file to download")
           (return . head)
           (nonEmpty addonFiles)
+
+      let _addonKnownVulnerabilities = []
 
       return AddonData {..}
 
@@ -182,12 +186,16 @@ addonDrv addon = "buildFirefoxXpiAddon" @@ fields
 
     optAttr n = toList . fmap (n,)
 
+    nonEmptyList _ [] = []
+    nonEmptyList n xs = [(n, mkList xs)]
+
     meta =
       mkWith "lib" $
         attrsE $
           optAttr "homepage" (mkStr <$> addon ^. addonHomepage)
             <> [("description", mkStr $ addon ^. addonDescription)]
             <> optAttr "license" (license <$> addon ^. addonLicense)
+            <> nonEmptyList "knownVulnerabilities" (mkStr <$> addon ^. addonKnownVulnerabilities)
             <> [("mozPermissions", mkList $ mkStr <$> (file ^. addonFilePermissions))]
             <> [("platforms", "platforms.all")]
 

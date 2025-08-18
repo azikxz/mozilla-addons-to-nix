@@ -41,7 +41,8 @@ instance FromJSON AddonLicense where
 data Addon = Addon
   { slug :: Text,
     pname :: Maybe Text,
-    license :: Maybe AddonLicense
+    license :: Maybe AddonLicense,
+    knownVulnerabilities :: Maybe [Text]
   }
   deriving (Show, Generic)
 
@@ -77,6 +78,7 @@ fetchAddons outputFile addons = addonsExpr >>= writeFileText outputFile
       FA.AddonReq
         slug
         ( maybe id (set FA.addonLicense . Just . getAddonLicense) license
+            . set FA.addonKnownVulnerabilities (fromMaybe [] knownVulnerabilities)
             . maybe id (FA.addonNixName .~) pname
         )
 

@@ -5,6 +5,10 @@
 * Handle 404 errors similar to 401 errors. That is, log it and skip
   the add-on.
 
+* Support adding known vulnerabilities to the add-on specification.
+  The content should be a list of strings, which is passed on
+  unchanged to the `meta.knownVulnerabilities` package field.
+
 ## Version 0.12.0 (2024-04-19)
 
 * Enable a little bit of concurrency when fetching add-on information.
