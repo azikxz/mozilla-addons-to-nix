@@ -40,10 +40,7 @@
 
         devShells.default = hpkgs.shellFor {
           packages = ps: [ package ];
-          nativeBuildInputs = with hpkgs; [
-            cabal-install
-            haskell-language-server
-          ];
+          nativeBuildInputs = with hpkgs; [ cabal-install ];
           shellHook = pre-commit-check.shellHook;
         };
       });
