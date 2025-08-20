@@ -6,10 +6,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
-      inputs = {
-        flake-utils.follows = "flake-utils";
-        nixpkgs.follows = "nixpkgs";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -17,7 +14,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        hpkgs = pkgs.haskell.packages.ghc94;
+        hpkgs = pkgs.haskell.packages.ghc98;
 
         name = "mozilla-addons-to-nix";
         src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
@@ -29,7 +26,7 @@
           hooks = {
             cabal-fmt.enable = true;
             hlint.enable = true;
-            nixfmt.enable = true;
+            nixfmt-classic.enable = true;
             ormolu.enable = true;
           };
         };
