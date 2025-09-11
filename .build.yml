@@ -12,5 +12,7 @@ tasks:
       cachix use rycee
   - build: >-
       nix build -L ./mozilla-addons-to-nix
+  - check: >-
+      nix flake check -L ./mozilla-addons-to-nix
   - cache: |
       cachix push rycee result
