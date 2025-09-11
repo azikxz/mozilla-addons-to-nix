@@ -9,11 +9,18 @@
     };
   };
 
-  outputs = { self, nixpkgs, pre-commit-hooks }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      pre-commit-hooks,
+    }:
     let
       lib = nixpkgs.lib;
-      forAllSystems = f:
-        lib.genAttrs lib.systems.flakeExposed (system:
+      forAllSystems =
+        f:
+        lib.genAttrs lib.systems.flakeExposed (
+          system:
           f rec {
             pkgs = nixpkgs.legacyPackages.${system};
             hpkgs = pkgs.haskell.packages.ghc98;
@@ -28,15 +35,21 @@
               hooks = {
                 cabal-fmt.enable = true;
                 hlint.enable = true;
-                nixfmt-classic.enable = true;
+                nixfmt-rfc-style.enable = true;
                 ormolu.enable = true;
               };
             };
-          });
-    in {
-      packages = forAllSystems (p: { default = p.package; });
+          }
+        );
+    in
+    {
+      packages = forAllSystems (p: {
+        default = p.package;
+      });
 
-      checks = forAllSystems (p: { inherit (p) package pre-commit-check; });
+      checks = forAllSystems (p: {
+        inherit (p) package pre-commit-check;
+      });
 
       devShells = forAllSystems (p: {
         default = p.hpkgs.shellFor {
