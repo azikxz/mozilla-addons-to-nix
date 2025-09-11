@@ -2,7 +2,6 @@
   description = "A tool to generate a Nix package set of Firefox add-ons.";
 
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
@@ -10,35 +9,41 @@
     };
   };
 
-  outputs = { self, flake-utils, nixpkgs, pre-commit-hooks }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-        hpkgs = pkgs.haskell.packages.ghc98;
+  outputs = { self, nixpkgs, pre-commit-hooks }:
+    let
+      lib = nixpkgs.lib;
+      forAllSystems = f:
+        lib.genAttrs lib.systems.flakeExposed (system:
+          f rec {
+            pkgs = nixpkgs.legacyPackages.${system};
+            hpkgs = pkgs.haskell.packages.ghc98;
 
-        name = "mozilla-addons-to-nix";
-        src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
+            pname = "mozilla-addons-to-nix";
+            src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
 
-        package = hpkgs.callCabal2nix name src { };
+            package = hpkgs.callCabal2nix pname src { };
 
-        pre-commit-check = pre-commit-hooks.lib.${system}.run {
-          inherit src;
-          hooks = {
-            cabal-fmt.enable = true;
-            hlint.enable = true;
-            nixfmt-classic.enable = true;
-            ormolu.enable = true;
-          };
-        };
-      in {
-        packages.default = package;
+            pre-commit-check = pre-commit-hooks.lib.${system}.run {
+              inherit src;
+              hooks = {
+                cabal-fmt.enable = true;
+                hlint.enable = true;
+                nixfmt-classic.enable = true;
+                ormolu.enable = true;
+              };
+            };
+          });
+    in {
+      packages = forAllSystems (p: { default = p.package; });
 
-        checks = { inherit package pre-commit-check; };
+      checks = forAllSystems (p: { inherit (p) package pre-commit-check; });
 
-        devShells.default = hpkgs.shellFor {
-          packages = ps: [ package ];
-          nativeBuildInputs = with hpkgs; [ cabal-install ];
-          shellHook = pre-commit-check.shellHook;
+      devShells = forAllSystems (p: {
+        default = p.hpkgs.shellFor {
+          packages = _: [ p.package ];
+          nativeBuildInputs = with p.hpkgs; [ cabal-install ];
+          shellHook = p.pre-commit-check.shellHook;
         };
       });
+    };
 }
