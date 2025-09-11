@@ -15,4 +15,6 @@ tasks:
   - check: >-
       nix flake check -L ./mozilla-addons-to-nix
   - cache: |
-      cachix push rycee result
+      if [[ ! -v PATCHSET_ID ]]; then
+        cachix push rycee result
+      fi
