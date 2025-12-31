@@ -43,9 +43,15 @@
           }
         );
     in
-    {
+    rec {
       packages = forAllSystems (p: {
         default = p.package;
       });
+
+      overlays.default = {
+        inherit (packages)
+          default
+          ;
+      };
     };
 }
