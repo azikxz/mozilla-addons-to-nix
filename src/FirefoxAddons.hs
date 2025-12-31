@@ -7,7 +7,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
-module System.Nixpkgs.FirefoxAddons
+module FirefoxAddons
   ( AddonReq (..),
     AddonData,
     AddonFile,
@@ -211,7 +211,7 @@ packageFun addons =
   where
     params =
       [ ("buildFirefoxXpiAddon", Nothing),
-        ("lib", Nothing),
+        ("lib", Nothing)
       ]
 
 addonsApiBase :: Text
