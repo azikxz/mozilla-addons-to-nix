@@ -175,6 +175,7 @@ addonDrv addon = "buildFirefoxXpiAddon" @@ fields
           ("addonId", mkStr $ addon ^. addonId),
           ("url", mkStr $ file ^. addonFileUrl),
           (hashAttrName, mkStr $ file ^. addonFileHash . hashValue)
+          ("meta", meta)
         ]
 
     file = addon ^. addonFile
@@ -187,6 +188,16 @@ addonDrv addon = "buildFirefoxXpiAddon" @@ fields
 
     nonEmptyList _ [] = []
     nonEmptyList n xs = [(n, mkList xs)]
+
+    meta =
+      mkWith "lib" $
+        attrsE $
+          optAttr "homepage" (mkStr <$> addon ^. addonHomepage)
+            <> [("description", mkStr $ addon ^. addonDescription)]
+            <> optAttr "license" (license <$> addon ^. addonLicense)
+            <> nonEmptyList "knownVulnerabilities" (mkStr <$> addon ^. addonKnownVulnerabilities)
+            <> [("mozPermissions", mkList $ mkStr <$> (file ^. addonFilePermissions))]
+            <> [("platforms", "platforms.all")]
 
 addonDrvs :: [AddonData] -> NExpr
 addonDrvs = attrsE . map attr
