@@ -7,7 +7,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
-module System.Nixpkgs.FirefoxAddons
+module FirefoxAddons
   ( AddonReq (..),
     AddonData,
     AddonFile,
@@ -174,8 +174,7 @@ addonDrv addon = "buildFirefoxXpiAddon" @@ fields
           ("version", mkStr $ addon ^. addonVersion),
           ("addonId", mkStr $ addon ^. addonId),
           ("url", mkStr $ file ^. addonFileUrl),
-          (hashAttrName, mkStr $ file ^. addonFileHash . hashValue),
-          ("meta", meta)
+          (hashAttrName, mkStr $ file ^. addonFileHash . hashValue)
         ]
 
     file = addon ^. addonFile
@@ -189,16 +188,6 @@ addonDrv addon = "buildFirefoxXpiAddon" @@ fields
     nonEmptyList _ [] = []
     nonEmptyList n xs = [(n, mkList xs)]
 
-    meta =
-      mkWith "lib" $
-        attrsE $
-          optAttr "homepage" (mkStr <$> addon ^. addonHomepage)
-            <> [("description", mkStr $ addon ^. addonDescription)]
-            <> optAttr "license" (license <$> addon ^. addonLicense)
-            <> nonEmptyList "knownVulnerabilities" (mkStr <$> addon ^. addonKnownVulnerabilities)
-            <> [("mozPermissions", mkList $ mkStr <$> (file ^. addonFilePermissions))]
-            <> [("platforms", "platforms.all")]
-
 addonDrvs :: [AddonData] -> NExpr
 addonDrvs = attrsE . map attr
   where
@@ -210,10 +199,7 @@ packageFun addons =
   mkParamset params False ==> addonDrvs addons
   where
     params =
-      [ ("buildFirefoxXpiAddon", Nothing),
-        ("fetchurl", Nothing),
-        ("lib", Nothing),
-        ("stdenv", Nothing)
+      [ ("buildFirefoxXpiAddon", Nothing)
       ]
 
 addonsApiBase :: Text

@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -11,9 +12,9 @@
 
   outputs =
     {
-      self,
       nixpkgs,
       pre-commit-hooks,
+      ...
     }:
     let
       lib = nixpkgs.lib;
@@ -45,18 +46,6 @@
     {
       packages = forAllSystems (p: {
         default = p.package;
-      });
-
-      checks = forAllSystems (p: {
-        inherit (p) package pre-commit-check;
-      });
-
-      devShells = forAllSystems (p: {
-        default = p.hpkgs.shellFor {
-          packages = _: [ p.package ];
-          nativeBuildInputs = with p.hpkgs; [ cabal-install ];
-          shellHook = p.pre-commit-check.shellHook;
-        };
       });
     };
 }

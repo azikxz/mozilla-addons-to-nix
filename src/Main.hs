@@ -12,7 +12,7 @@ import GHC.IO.Encoding (setLocaleEncoding, utf8)
 import Lens.Micro.Platform
 import qualified Relude.Unsafe as Unsafe
 import System.Environment (getProgName)
-import qualified System.Nixpkgs.FirefoxAddons as FA
+import qualified FirefoxAddons as FA
 
 newtype AddonLicense = AddonLicense {getAddonLicense :: FA.AddonLicense}
   deriving (Show, Generic)
