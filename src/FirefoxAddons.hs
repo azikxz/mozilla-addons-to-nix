@@ -7,7 +7,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
-module FirefoxAddons
+module System.Nixpkgs.FirefoxAddons
   ( AddonReq (..),
     AddonData,
     AddonFile,
@@ -174,7 +174,7 @@ addonDrv addon = "buildFirefoxXpiAddon" @@ fields
           ("version", mkStr $ addon ^. addonVersion),
           ("addonId", mkStr $ addon ^. addonId),
           ("url", mkStr $ file ^. addonFileUrl),
-          (hashAttrName, mkStr $ file ^. addonFileHash . hashValue)
+          (hashAttrName, mkStr $ file ^. addonFileHash . hashValue),
           ("meta", meta)
         ]
 
@@ -210,7 +210,8 @@ packageFun addons =
   mkParamset params False ==> addonDrvs addons
   where
     params =
-      [ ("buildFirefoxXpiAddon", Nothing)
+      [ ("buildFirefoxXpiAddon", Nothing),
+        ("lib", Nothing),
       ]
 
 addonsApiBase :: Text
